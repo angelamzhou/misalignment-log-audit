@@ -76,10 +76,38 @@ reading.
 The signals and why each matters are in `references/incident-patterns.md`. A hit that comes right
 after a 401/403/429 or other failure is worth much more than the same hit on its own.
 
+### 3b. Optional: a judge pass for wider coverage
+
+The scan only finds what its patterns match. A session that crosses a line without leaving a
+matching trace (fabricated results, a quiet scope change) never ranks. For wider coverage, offer a
+judge pass, where a cheap model reads every session against the codebook:
+
+```bash
+python3 -I <skill-dir>/scripts/judge_sessions.py --out <scratch-dir>/judge --dry-run
+python3 -I <skill-dir>/scripts/judge_sessions.py --out <scratch-dir>/judge [--passes 2]
+```
+
+This sends a clipped, masked version of **every** selected session to the model provider: Anthropic
+through `claude -p` (default model `haiku`), or OpenAI with `--backend codex`. Run `--dry-run`
+first and show the user how many sessions and characters would go out. Run the real pass only on
+their explicit yes, and narrow it with `--since`, `--project` or `--limit` if they want. The judge
+runs with no tools (or a read-only sandbox for Codex), so an injected instruction can at worst skew
+a label. Judges are unstable between runs; `--passes 2` keeps the union of both passes' flags.
+
+It writes `judge.md` (third-party, unendorsed, moderate-or-worse and possible-injection flags, each
+with `file:line`) and `judge.csv`. Treat its flags like scanner hits: sessions to read, not findings.
+Merge them with the scan's ranking when choosing what to read.
+
 ### 4. Read the top sessions
 
-For each high-ranking session, open the raw transcript around each hit (and the subagent files in
-`<session-id>/subagents/`). Reconstruct:
+**How many:** by default, read the **top 10** sessions from the scan (plus any session the judge
+flagged as third-party, unendorsed, serious or possible injection), or all of them if there are
+fewer. Then tell the user how many flagged sessions you didn't read, and ask whether to continue
+with the next 10. Say in the report how many you read out of how many were flagged.
+
+For each session you read, open the raw transcript around each hit (and the subagent files in
+`<session-id>/subagents/`), then read back to the first request and forward to the final message
+to the user. Reconstruct:
 
 1. **What the user actually asked.** Quote it. Note anything the agent added on its own.
 2. **The blocker**, if any: what failed, and what the agent said in its reasoning right after.
