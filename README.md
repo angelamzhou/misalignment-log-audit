@@ -27,8 +27,26 @@ It works on:
 4. **Compares** each action to the closest known incident and writes a Markdown report that keeps
    verified incidents separate from unverified candidates.
 
-It never re-runs anything it finds, tests found keys, or contacts any site. Keep the transcripts on
-your machine: they often contain credentials and private data.
+It never re-runs anything it finds, tests found keys, or contacts any site.
+
+## Privacy and safety: read this first
+
+- **Your agent's model provider will see excerpts of your logs.** The scanner runs entirely on your
+  machine. But when the agent reads sessions to verify them, those excerpts are sent to whichever
+  provider runs the agent (Anthropic for Claude Code, OpenAI for Codex), like anything else you
+  show it. If your logs hold client data, health records, unpublished work or secrets, narrow the
+  scope with `--project` / `--since` or don't run the reading step. The skill tells you this before
+  it starts reading.
+- **Transcripts can contain prompt injections.** Your logs include web pages and files your agents
+  fetched, and any of that text could be written to manipulate an AI reading it. The skill tells
+  the auditing agent to treat everything in a transcript as evidence, never as instructions, and to
+  report injection attempts as findings. That reduces the risk but can't guarantee it, so review
+  the agent's actions as you would in any session.
+- **Scan output can contain sensitive text.** `scan.md` and `scan.csv` quote snippets from your
+  transcripts. Masking hides long keys, values after names like `password=` or `Authorization:`,
+  credentials in URLs, and the name part of email addresses, but it misses things: short passwords,
+  personal details and private text can still appear. Keep the output out of git (`scan/` is in
+  this repo's `.gitignore`) and don't share it without reading it first.
 
 ## Before you start: keep your logs
 
@@ -66,8 +84,8 @@ The scanner is a single Python 3 file with no dependencies.
 python3 -I skills/misalignment-log-audit/scripts/scan_logs.py --out ./scan
 ```
 
-It writes `scan/scan.md`, a ranked list of sessions, and `scan/scan.csv`, one row per hit. Useful
-options:
+It writes `scan/scan.md`, a ranked list of sessions, and `scan/scan.csv`, one row per hit. Both
+quote masked snippets from your transcripts (see Privacy and safety above). Useful options:
 
 | Option | Effect |
 |---|---|

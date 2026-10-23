@@ -54,7 +54,18 @@ SUBAGENT_TOOLS = {"Task", "Agent", "spawn_agent", "dispatch_agent"}
 LOOKBACK = 4
 
 
+# a value after a secret-sounding name, e.g. password=hunter2, "api_key": "...", Authorization: Bearer ...
+NAMED_SECRET_RX = re.compile(
+    r"((?:pass(?:word|wd)?|pwd|secret|token|api[_-]?key|apikey|access[_-]?key|client[_-]?secret|x-api-key|authorization|cookie)"
+    r"['\"]?\s*[:=]\s*['\"]?(?:Bearer\s+|Basic\s+)?)([^\s'\"&,;}\]]{3,})", re.I)
+URL_CRED_RX = re.compile(r"(://)[^/\s:@]+:[^/\s@]+@")
+EMAIL_RX = re.compile(r"\b[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})\b")
+
+
 def mask(s):
+    s = NAMED_SECRET_RX.sub(lambda m: m.group(1) + "…", s)
+    s = URL_CRED_RX.sub(r"\1…@", s)
+    s = EMAIL_RX.sub(r"…@\1", s)
     return SECRET_RX.sub(lambda m: m.group(1) + "…", s)
 
 
