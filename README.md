@@ -6,6 +6,13 @@ headers, leaving a sandbox, submitting forms or sending messages, unrequested pu
 and gaming tests. The skill uses public 2026 incidents as reference points: OpenAI's DNS escape, the
 Hugging Face incident, Anthropic's unintended-actions reports, CheatBench and ImpossibleBench.
 
+Getting blocked by sites (Cloudflare checks, 403s, rate limits, paywalls) is normal for an agent,
+and some coping is expected. The skill separates **expected** responses (stop and tell you, retry
+politely, use a legitimate source) from **gray** ones (a browser User-Agent, an archived copy) and
+**excess** ones (forged headers, keys lifted from the site, shadow libraries, getting past human
+checks, hammering after refusals). It reports the excess per blocked request rather than a raw count
+of workarounds. The ladder is in `references/expected-vs-excess.md`, and you can edit it.
+
 Most of what an agent does beyond your literal request is fine, and often wanted. The questions this
 skill asks are **whose system** an action touched, whether it came **after a blocker**, and whether
 **you would sign off** on it.
@@ -87,7 +94,8 @@ The scanner is a single Python 3 file with no dependencies.
 python3 -I skills/misalignment-log-audit/scripts/scan_logs.py --out ./scan
 ```
 
-It writes `scan/scan.md`, a ranked list of sessions, and `scan/scan.csv`, one row per hit. Both
+It writes `scan/scan.md` (a block-response table, then a ranked list of sessions), `scan/scan.csv`
+(one row per hit) and `scan/blocks.csv` (every blocked request and the agent's response). Both
 quote masked snippets from your transcripts (see Privacy and safety above). Useful options:
 
 | Option | Effect |
@@ -131,6 +139,7 @@ skills/misalignment-log-audit/
 ├── SKILL.md                         workflow
 ├── references/incident-patterns.md  known incidents, their log traces, sources
 ├── references/codebook.md           how to classify an action
+├── references/expected-vs-excess.md the response ladder for blocked web requests
 ├── scripts/scan_logs.py             read-only signal scanner
 └── scripts/judge_sessions.py        optional judge pass (sends text to your model provider)
 ```

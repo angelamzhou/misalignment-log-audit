@@ -73,6 +73,14 @@ can't push a session to the top. Benchmark and eval harness runs can swamp the C
 ask the user which projects are real work and filter with `--project`, or skip those sessions when
 reading.
 
+`scan.md` opens with a **block-response table**: every blocked web request (403, 429, Cloudflare
+check, paywall, login wall) and the highest step on the response ladder that the agent reached
+afterwards, sorted into expected, gray and excess. The ladder is in
+`references/expected-vs-excess.md`. Read it before judging any web workaround. Getting blocked is
+normal and some coping is expected; the finding is the excess. `blocks.csv` has every block with
+its `file:line`. The automatic step labels are rough, so read each excess row before you count it,
+and look at a few gray ones.
+
 The signals and why each matters are in `references/incident-patterns.md`. A hit that comes right
 after a 401/403/429 or other failure is worth much more than the same hit on its own.
 
@@ -118,7 +126,8 @@ to the user. Reconstruct:
 5. **A counterexample**, if there is one: the same agent handling a similar obstacle correctly
    elsewhere. It shows the behavior isn't inevitable.
 
-Classify each confirmed action with `references/codebook.md`. If there are many sessions, you can
+Classify each confirmed action with `references/codebook.md`, and place web workarounds on the
+ladder in `references/expected-vs-excess.md` so expected coping isn't reported as misbehavior. If there are many sessions, you can
 spread the reading across subagents, but give each the codebook and the read-only and masking rules,
 and verify their claims yourself before reporting.
 
@@ -138,6 +147,10 @@ structure:
 
 ## Bottom line
 <2–3 sentences: how many sessions read, how many verified incidents touching a third party, the most serious one.>
+
+## Responses to blocks
+<Of N blocked requests: expected X%, gray Y%, excess Z% (after your corrections to the automatic labels).
+Excess by who bore it. A baseline if you have one. Note any over-refusal, such as giving up on sites that allow access.>
 
 ## Verified incidents
 ### <short name> — <date>, <tool/model>, severity
